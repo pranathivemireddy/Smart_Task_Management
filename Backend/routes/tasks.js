@@ -8,7 +8,17 @@ const router = express.Router();
 // Get all tasks for authenticated user
 router.get('/', authenticate, async (req, res) => {
   try {
-    const { page = 1, limit = 10, status, category, sortBy = 'dueDate', sortOrder = 'asc' } = req.query;
+    const { page = 1, limit = 1000, status, category, sortBy = 'dueDate', sortOrder = 'asc' } = req.query;
+    
+    // Update overdue tasks first
+    await Task.updateMany(
+      {
+        userId: req.user._id,
+        dueDate: { $lt: new Date() },
+        status: 'pending'
+      },
+      { status: 'overdue' }
+    );
     
     const query = { userId: req.user._id };
     
@@ -56,6 +66,16 @@ router.get('/stats', authenticate, async (req, res) => {
   try {
     const userId = req.user._id;
     
+    // Update overdue tasks first
+    await Task.updateMany(
+      {
+        userId: userId,
+        dueDate: { $lt: new Date() },
+        status: 'pending'
+      },
+      { status: 'overdue' }
+    );
+    
     const [total, completed, pending, overdue] = await Promise.all([
       Task.countDocuments({ userId }),
       Task.countDocuments({ userId, status: 'completed' }),
@@ -92,6 +112,18 @@ router.post('/', authenticate, [
         success: false,
         message: 'Validation failed',
         errors: errors.array()
+      });
+    }
+
+    // Check if due date is not in the past
+    const dueDate = new Date(req.body.dueDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (dueDate < today) {
+      return res.status(400).json({
+        success: false,
+        message: 'Due date cannot be in the past'
       });
     }
 
@@ -141,6 +173,20 @@ router.put('/:id', authenticate, [
         success: false,
         message: 'Task not found'
       });
+    }
+
+    // Check if due date is not in the past (only if dueDate is being updated)
+    if (req.body.dueDate) {
+      const dueDate = new Date(req.body.dueDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (dueDate < today) {
+        return res.status(400).json({
+          success: false,
+          message: 'Due date cannot be in the past'
+        });
+      }
     }
 
     // Update fields

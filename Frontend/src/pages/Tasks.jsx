@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import TaskModal from '../components/TaskModal';
 import ExportButtons from '../components/ExportButtons';
 
-function Tasks() {
+export default function Tasks() {
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,8 +28,11 @@ function Tasks() {
 
   const fetchTasks = async () => {
     try {
-      const response = await axios.get('https://taskflow-wxqj.onrender.com/api/tasks');
-      setTasks(response.data.tasks);
+      setLoading(true);
+      const response = await axios.get('https://taskflow-wxqj.onrender.com/api/tasks?limit=1000');
+      if (response.data.success) {
+        setTasks(response.data.tasks || []);
+      }
     } catch (error) {
       console.error('Error fetching tasks:', error);
       toast.error('Failed to fetch tasks');
@@ -45,7 +48,7 @@ function Tasks() {
     if (searchTerm) {
       filtered = filtered.filter(task => 
         task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        task.description.toLowerCase().includes(searchTerm.toLowerCase())
+        (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
@@ -108,12 +111,15 @@ function Tasks() {
   const handleDeleteTask = async (taskId) => {
     if (window.confirm('Are you sure you want to delete this task?')) {
       try {
-        await axios.delete(`https://taskflow-wxqj.onrender.com/api/tasks/${taskId}`);
-        setTasks(tasks.filter(task => task._id !== taskId));
-        toast.success('Task deleted successfully');
+        const response = await axios.delete(`https://taskflow-wxqj.onrender.com/api/tasks/${taskId}`);
+        if (response.data.success) {
+          // Remove the deleted task from the state
+          setTasks(prevTasks => prevTasks.filter(task => task._id !== taskId));
+          toast.success('Task deleted successfully');
+        }
       } catch (error) {
         console.error('Error deleting task:', error);
-        toast.error('Failed to delete task');
+        toast.error(error.response?.data?.message || 'Failed to delete task');
       }
     }
   };
@@ -122,24 +128,38 @@ function Tasks() {
     const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
     
     try {
-      await axios.put(`https://taskflow-wxqj.onrender.com/api/tasks/${taskId}`, { status: newStatus });
-      setTasks(tasks.map(task => 
-        task._id === taskId ? { ...task, status: newStatus } : task
-      ));
-      toast.success(`Task marked as ${newStatus}`);
+      const response = await axios.put(`https://taskflow-wxqj.onrender.com/api/tasks/${taskId}`, { status: newStatus });
+      if (response.data.success) {
+        // Update the task in the state with the new status and completedAt
+        setTasks(prevTasks => 
+          prevTasks.map(task => 
+            task._id === taskId ? { 
+              ...task, 
+              status: newStatus,
+              completedAt: newStatus === 'completed' ? new Date().toISOString() : null,
+              updatedAt: new Date().toISOString()
+            } : task
+          )
+        );
+        toast.success(`Task marked as ${newStatus}`);
+      }
     } catch (error) {
       console.error('Error updating task status:', error);
-      toast.error('Failed to update task status');
+      toast.error(error.response?.data?.message || 'Failed to update task status');
     }
   };
 
   const handleTaskSaved = (savedTask) => {
     if (editingTask) {
-      setTasks(tasks.map(task => 
-        task._id === savedTask._id ? savedTask : task
-      ));
+      // Update existing task
+      setTasks(prevTasks => 
+        prevTasks.map(task => 
+          task._id === savedTask._id ? savedTask : task
+        )
+      );
     } else {
-      setTasks([...tasks, savedTask]);
+      // Add new task
+      setTasks(prevTasks => [savedTask, ...prevTasks]);
     }
     setShowModal(false);
     setEditingTask(null);
@@ -316,18 +336,21 @@ function Tasks() {
                         <button
                           onClick={() => handleToggleStatus(task._id, task.status)}
                           className="text-blue-600 hover:text-blue-900"
+                          title={`Mark as ${task.status === 'completed' ? 'pending' : 'completed'}`}
                         >
                           {getStatusIcon(task.status)}
                         </button>
                         <button
                           onClick={() => handleEditTask(task)}
                           className="text-indigo-600 hover:text-indigo-900"
+                          title="Edit task"
                         >
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteTask(task._id)}
                           className="text-red-600 hover:text-red-900"
+                          title="Delete task"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -341,6 +364,9 @@ function Tasks() {
         ) : (
           <div className="text-center py-12">
             <p className="text-gray-500">No tasks found</p>
+            <p className="text-sm text-gray-400 mt-2">
+              {tasks.length === 0 ? 'Create your first task to get started!' : 'Try adjusting your filters'}
+            </p>
           </div>
         )}
       </div>
@@ -356,4 +382,3 @@ function Tasks() {
     </div>
   );
 }
-export default Tasks

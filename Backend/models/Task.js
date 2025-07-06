@@ -54,19 +54,4 @@ const taskSchema = new mongoose.Schema({
 taskSchema.index({ userId: 1, dueDate: 1 });
 taskSchema.index({ status: 1, dueDate: 1 });
 
-// Update status to overdue for past due tasks
-taskSchema.pre('find', function() {
-  this.where({
-    dueDate: { $lt: new Date() },
-    status: 'pending'
-  }).updateMany({}, { status: 'overdue' });
-});
-
-taskSchema.pre('findOne', function() {
-  this.where({
-    dueDate: { $lt: new Date() },
-    status: 'pending'
-  }).updateMany({}, { status: 'overdue' });
-});
-
 export default mongoose.model('Task', taskSchema);
