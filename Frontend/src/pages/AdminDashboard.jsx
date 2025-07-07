@@ -37,9 +37,7 @@ export default function AdminDashboard() {
       axios.get('https://taskflow-wxqj.onrender.com/api/admin/stats')
     ]);
 
-    // Process audit logs to ensure user information is available
     const processedLogs = auditRes.data.logs.map(log => {
-      // If user is not populated, try to find it in the users response
       if (!log.user && log.userId) {
         const foundUser = usersRes.data.users.find(u => u._id === log.userId);
         return { ...log, user: foundUser || null };
@@ -52,7 +50,6 @@ export default function AdminDashboard() {
     setAuditLogs(processedLogs);
     setStats(statsRes.data);
 
-      // Generate user activity data
       const userActivity = usersRes.data.users.map(user => {
         const userTasks = tasksRes.data.tasks.filter(task => task.userId === user._id);
         return {
@@ -63,7 +60,6 @@ export default function AdminDashboard() {
       }).sort((a, b) => b.tasks - a.tasks).slice(0, 10);
       setUserActivityData(userActivity);
 
-      // Generate task status data
       const statusData = [
         { name: 'Completed', value: statsRes.data.completedTasks, color: '#10B981' },
         { name: 'Pending', value: statsRes.data.pendingTasks, color: '#F59E0B' },
@@ -117,7 +113,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
         <div className="flex items-center gap-2">
@@ -126,7 +121,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between">
@@ -211,12 +205,9 @@ export default function AdminDashboard() {
         </nav>
       </div>
 
-      {/* Tab Content */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          {/* Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* User Activity Chart */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-gray-900">Top Active Users</h2>
@@ -238,7 +229,6 @@ export default function AdminDashboard() {
               </ResponsiveContainer>
             </div>
 
-            {/* Task Status Chart */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-gray-900">Overall Task Status</h2>
@@ -276,7 +266,6 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Quick Stats */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">System Overview</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -493,7 +482,6 @@ export default function AdminDashboard() {
 
 {activeTab === 'audit' && (
   <div className="bg-white rounded-lg shadow-md overflow-hidden">
-    {/* ... existing header code ... */}
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead className="bg-gray-50">
