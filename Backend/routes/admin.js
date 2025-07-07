@@ -41,7 +41,6 @@ router.post('/users', [
 
     const tempPassword = generateSecurePassword();
 
-    // Create user
     const user = new User({ 
       name, 
       email, 
@@ -50,7 +49,6 @@ router.post('/users', [
     });
     await user.save();
 
-    // Send welcome email with login credentials
     let emailStatus = 'not-sent';
     try {
       const emailResult = await sendWelcomeEmail(email, name, tempPassword);
@@ -66,7 +64,6 @@ router.post('/users', [
       emailStatus = 'failed';
     }
 
-    // Log the credentials in console for development
     console.log('\n=== NEW USER CREATED ===');
     console.log(`Name: ${name}`);
     console.log(`Email: ${email}`);
@@ -89,7 +86,6 @@ router.post('/users', [
         createdAt: user.createdAt
       },
       emailStatus,
-      // Include temp password in response for development (remove in production)
       tempPassword: process.env.NODE_ENV === 'development' ? tempPassword : undefined
     });
   } catch (error) {
@@ -108,10 +104,10 @@ function generateSecurePassword() {
   let password = '';
   
 
-  password += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)]; // uppercase
-  password += 'abcdefghijklmnopqrstuvwxyz'[Math.floor(Math.random() * 26)]; // lowercase
-  password += '0123456789'[Math.floor(Math.random() * 10)]; // number
-  password += '!@#$%^&*'[Math.floor(Math.random() * 8)]; // special
+  password += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)]; 
+  password += 'abcdefghijklmnopqrstuvwxyz'[Math.floor(Math.random() * 26)]; 
+  password += '0123456789'[Math.floor(Math.random() * 10)]; 
+  password += '!@#$%^&*'[Math.floor(Math.random() * 8)]; 
   
 
   for (let i = password.length; i < length; i++) {
@@ -122,7 +118,6 @@ function generateSecurePassword() {
   return password.split('').sort(() => Math.random() - 0.5).join('');
 }
 
-// Get all users
 router.get('/users', async (req, res) => {
   try {
     const { page = 1, limit = 10, status, role } = req.query;
@@ -164,7 +159,6 @@ router.get('/users', async (req, res) => {
   }
 });
 
-// Get all tasks
 router.get('/tasks', async (req, res) => {
   try {
     const { page = 1, limit = 10, status, category, userId } = req.query;
@@ -213,7 +207,6 @@ router.get('/tasks', async (req, res) => {
   }
 });
 
-// Get audit logs
 router.get('/audit-logs', async (req, res) => {
   try {
     const { page = 1, limit = 10, action, resource, userId } = req.query;
@@ -262,7 +255,6 @@ router.get('/audit-logs', async (req, res) => {
   }
 });
 
-// Get admin statistics
 router.get('/stats', async (req, res) => {
   try {
     const [totalUsers, activeUsers, inactiveUsers, totalTasks, completedTasks, pendingTasks, overdueTasks] = await Promise.all([
@@ -294,7 +286,6 @@ router.get('/stats', async (req, res) => {
   }
 });
 
-// Update user status
 router.put('/users/:id/status', [
   body('status').isIn(['active', 'inactive']).withMessage('Invalid status'),
 ], async (req, res) => {
@@ -317,7 +308,6 @@ router.put('/users/:id/status', [
       });
     }
 
-    // Prevent admin from deactivating themselves
     if (user._id.equals(req.user._id)) {
       return res.status(400).json({
         success: false,
@@ -348,7 +338,6 @@ router.put('/users/:id/status', [
   }
 });
 
-// Delete user
 router.delete('/users/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -360,7 +349,6 @@ router.delete('/users/:id', async (req, res) => {
       });
     }
 
-    // Prevent admin from deleting themselves
     if (user._id.equals(req.user._id)) {
       return res.status(400).json({
         success: false,
@@ -368,10 +356,8 @@ router.delete('/users/:id', async (req, res) => {
       });
     }
 
-    // Delete user's tasks
     await Task.deleteMany({ userId: user._id });
     
-    // Delete user
     await User.deleteOne({ _id: req.params.id });
 
     res.json({
@@ -387,7 +373,6 @@ router.delete('/users/:id', async (req, res) => {
   }
 });
 
-// Update user role
 router.put('/users/:id/role', [
   body('role').isIn(['user', 'admin']).withMessage('Invalid role'),
 ], async (req, res) => {

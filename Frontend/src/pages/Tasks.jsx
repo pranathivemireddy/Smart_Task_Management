@@ -44,7 +44,6 @@ export default function Tasks() {
   const filterAndSortTasks = () => {
     let filtered = [...tasks];
 
-    // Apply search filter
     if (searchTerm) {
       filtered = filtered.filter(task => 
         task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -52,17 +51,14 @@ export default function Tasks() {
       );
     }
 
-    // Apply status filter
     if (filterStatus !== 'all') {
       filtered = filtered.filter(task => task.status === filterStatus);
     }
 
-    // Apply category filter
     if (filterCategory !== 'all') {
       filtered = filtered.filter(task => task.category === filterCategory);
     }
 
-    // Apply sorting
     filtered.sort((a, b) => {
       let aValue, bValue;
 
@@ -113,7 +109,6 @@ export default function Tasks() {
       try {
         const response = await axios.delete(`https://taskflow-wxqj.onrender.com/api/tasks/${taskId}`);
         if (response.data.success) {
-          // Remove the deleted task from the state
           setTasks(prevTasks => prevTasks.filter(task => task._id !== taskId));
           toast.success('Task deleted successfully');
         }
@@ -130,7 +125,6 @@ export default function Tasks() {
     try {
       const response = await axios.put(`https://taskflow-wxqj.onrender.com/api/tasks/${taskId}`, { status: newStatus });
       if (response.data.success) {
-        // Update the task in the state with the new status and completedAt
         setTasks(prevTasks => 
           prevTasks.map(task => 
             task._id === taskId ? { 
@@ -151,14 +145,12 @@ export default function Tasks() {
 
   const handleTaskSaved = (savedTask) => {
     if (editingTask) {
-      // Update existing task
       setTasks(prevTasks => 
         prevTasks.map(task => 
           task._id === savedTask._id ? savedTask : task
         )
       );
     } else {
-      // Add new task
       setTasks(prevTasks => [savedTask, ...prevTasks]);
     }
     setShowModal(false);
@@ -203,7 +195,6 @@ export default function Tasks() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-bold text-gray-900">Tasks</h1>
         <div className="flex gap-2">
@@ -222,10 +213,8 @@ export default function Tasks() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <input
@@ -237,7 +226,6 @@ export default function Tasks() {
             />
           </div>
 
-          {/* Status Filter */}
           <select
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             value={filterStatus}
@@ -249,7 +237,6 @@ export default function Tasks() {
             <option value="overdue">Overdue</option>
           </select>
 
-          {/* Category Filter */}
           <select
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             value={filterCategory}
@@ -261,7 +248,6 @@ export default function Tasks() {
             ))}
           </select>
 
-          {/* Sort By */}
           <select
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             value={sortBy}
@@ -273,7 +259,6 @@ export default function Tasks() {
             <option value="category">Category</option>
           </select>
 
-          {/* Sort Order */}
           <select
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             value={sortOrder}
@@ -285,7 +270,6 @@ export default function Tasks() {
         </div>
       </div>
 
-      {/* Tasks List */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         {filteredTasks.length > 0 ? (
           <div className="overflow-x-auto">
@@ -371,7 +355,6 @@ export default function Tasks() {
         )}
       </div>
 
-      {/* Task Modal */}
       {showModal && (
         <TaskModal
           task={editingTask}

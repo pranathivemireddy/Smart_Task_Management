@@ -5,12 +5,10 @@ import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Get all tasks for authenticated user
 router.get('/', authenticate, async (req, res) => {
   try {
     const { page = 1, limit = 1000, status, category, sortBy = 'dueDate', sortOrder = 'asc' } = req.query;
     
-    // Update overdue tasks first
     await Task.updateMany(
       {
         userId: req.user._id,
@@ -22,7 +20,6 @@ router.get('/', authenticate, async (req, res) => {
     
     const query = { userId: req.user._id };
     
-    // Add filters
     if (status && status !== 'all') {
       query.status = status;
     }
@@ -31,7 +28,6 @@ router.get('/', authenticate, async (req, res) => {
       query.category = category;
     }
     
-    // Build sort object
     const sort = {};
     sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
     
@@ -61,12 +57,10 @@ router.get('/', authenticate, async (req, res) => {
   }
 });
 
-// Get task statistics
 router.get('/stats', authenticate, async (req, res) => {
   try {
     const userId = req.user._id;
     
-    // Update overdue tasks first
     await Task.updateMany(
       {
         userId: userId,
@@ -99,7 +93,6 @@ router.get('/stats', authenticate, async (req, res) => {
   }
 });
 
-// Create new task
 router.post('/', authenticate, [
   body('title').trim().notEmpty().withMessage('Title is required'),
   body('category').isIn(['Work', 'Personal', 'Health', 'Education', 'Shopping', 'Finance', 'Travel', 'Other']).withMessage('Invalid category'),
@@ -115,7 +108,6 @@ router.post('/', authenticate, [
       });
     }
 
-    // Check if due date is not in the past
     const dueDate = new Date(req.body.dueDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -149,7 +141,6 @@ router.post('/', authenticate, [
   }
 });
 
-// Update task
 router.put('/:id', authenticate, [
   body('title').optional().trim().notEmpty().withMessage('Title cannot be empty'),
   body('category').optional().isIn(['Work', 'Personal', 'Health', 'Education', 'Shopping', 'Finance', 'Travel', 'Other']).withMessage('Invalid category'),
@@ -175,7 +166,6 @@ router.put('/:id', authenticate, [
       });
     }
 
-    // Check if due date is not in the past (only if dueDate is being updated)
     if (req.body.dueDate) {
       const dueDate = new Date(req.body.dueDate);
       const today = new Date();
@@ -189,14 +179,12 @@ router.put('/:id', authenticate, [
       }
     }
 
-    // Update fields
     Object.keys(req.body).forEach(key => {
       if (req.body[key] !== undefined) {
         task[key] = req.body[key];
       }
     });
 
-    // Set completedAt if status is completed
     if (req.body.status === 'completed' && task.status !== 'completed') {
       task.completedAt = new Date();
     } else if (req.body.status !== 'completed') {
@@ -219,7 +207,6 @@ router.put('/:id', authenticate, [
   }
 });
 
-// Delete task
 router.delete('/:id', authenticate, async (req, res) => {
   try {
     const task = await Task.findOne({ _id: req.params.id, userId: req.user._id });
@@ -246,7 +233,6 @@ router.delete('/:id', authenticate, async (req, res) => {
   }
 });
 
-// Get single task
 router.get('/:id', authenticate, async (req, res) => {
   try {
     const task = await Task.findOne({ _id: req.params.id, userId: req.user._id });

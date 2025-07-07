@@ -14,12 +14,10 @@ export const authenticate = async (req, res, next) => {
     let user;
 
     try {
-      // Try to verify as JWT token first
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
       user = await User.findById(decoded.id);
     } catch (jwtError) {
       try {
-        // If JWT verification fails, try Firebase token
         const firebaseUser = await verifyFirebaseToken(token);
         user = await User.findOne({ firebaseUid: firebaseUser.uid });
       } catch (firebaseError) {

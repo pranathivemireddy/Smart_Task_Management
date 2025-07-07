@@ -1,23 +1,19 @@
 import AuditLog from '../models/AuditLog.js';
 
 export const auditLogger = async (req, res, next) => {
-  // Store original methods
   const originalJson = res.json;
   const originalSend = res.send;
 
-  // Override res.json to capture response
   res.json = function(data) {
     res.locals.responseData = data;
     return originalJson.call(this, data);
   };
 
-  // Override res.send to capture response
   res.send = function(data) {
     res.locals.responseData = data;
     return originalSend.call(this, data);
   };
 
-  // Log after response is sent
   res.on('finish', async () => {
     try {
       if (req.user && shouldLog(req)) {
@@ -42,12 +38,10 @@ export const auditLogger = async (req, res, next) => {
 };
 
 const shouldLog = (req) => {
-  // Don't log GET requests (unless they're sensitive)
   if (req.method === 'GET' && !req.path.includes('/admin/')) {
     return false;
   }
 
-  // Don't log health checks
   if (req.path === '/api/health') {
     return false;
   }

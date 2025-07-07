@@ -8,7 +8,6 @@ import { verifyFirebaseToken } from '../config/firebase.js';
 
 const router = express.Router();
 dotenv.config()
-// Register
 router.post('/register', [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('email').isEmail().withMessage('Valid email is required'),
@@ -27,7 +26,6 @@ router.post('/register', [
 
     const { name, email, password, role = 'user' } = req.body;
 
-    // Check if user exists with this email
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
@@ -36,11 +34,9 @@ router.post('/register', [
       });
     }
 
-    // Create user with specified role
     const user = new User({ name, email, password, role });
     await user.save();
 
-    // Generate JWT
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET || 'your-secret-key',
@@ -67,7 +63,6 @@ router.post('/register', [
   }
 });
 
-// Login
 router.post('/login', [
   body('email').isEmail().withMessage('Valid email is required'),
   body('password').notEmpty().withMessage('Password is required'),
@@ -84,7 +79,6 @@ router.post('/login', [
 
     const { email, password } = req.body;
 
-    // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({
@@ -93,7 +87,6 @@ router.post('/login', [
       });
     }
 
-    // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(400).json({
@@ -102,7 +95,6 @@ router.post('/login', [
       });
     }
 
-    // Check if user is active
     if (user.status === 'inactive') {
       return res.status(400).json({
         success: false,
@@ -110,11 +102,9 @@ router.post('/login', [
       });
     }
 
-    // Update last login
     user.lastLogin = new Date();
     await user.save();
 
-    // Generate JWT
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET || 'your-secret-key',
@@ -141,7 +131,6 @@ router.post('/login', [
   }
 });
 
-// Google Login
 router.post('/google', async (req, res) => {
   try {
     const { token } = req.body;
@@ -153,14 +142,11 @@ router.post('/google', async (req, res) => {
       });
     }
 
-    // Verify Firebase token
     const firebaseUser = await verifyFirebaseToken(token);
     
-    // Find or create user (Google users default to 'user' role)
     let user = await User.findOne({ firebaseUid: firebaseUser.uid });
     
     if (!user) {
-      // Check if email already exists with regular account
       const existingEmailUser = await User.findOne({ email: firebaseUser.email });
       if (existingEmailUser) {
         return res.status(400).json({
@@ -174,12 +160,11 @@ router.post('/google', async (req, res) => {
         email: firebaseUser.email,
         firebaseUid: firebaseUser.uid,
         avatar: firebaseUser.picture,
-        role: 'user' // Google users are always regular users
+        role: 'user' 
       });
       await user.save();
     }
 
-    // Check if user is active
     if (user.status === 'inactive') {
       return res.status(400).json({
         success: false,
@@ -187,11 +172,9 @@ router.post('/google', async (req, res) => {
       });
     }
 
-    // Update last login
     user.lastLogin = new Date();
     await user.save();
 
-    // Generate JWT
     const jwtToken = jwt.sign(
       { id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET || 'your-secret-key',
@@ -218,7 +201,6 @@ router.post('/google', async (req, res) => {
   }
 });
 
-// Get profile
 router.get('/profile', authenticate, async (req, res) => {
   try {
     res.json({

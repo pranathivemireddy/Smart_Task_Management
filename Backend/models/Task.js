@@ -50,7 +50,6 @@ const taskSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-// Index for better query performance
 taskSchema.index({ userId: 1, dueDate: 1 });
 taskSchema.index({ status: 1, dueDate: 1 });
 

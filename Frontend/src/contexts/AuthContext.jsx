@@ -15,7 +15,6 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing token
     const token = localStorage.getItem('token');
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -45,7 +44,6 @@ export function AuthProvider({ children }) {
       const result = await signInWithPopup(auth, googleProvider);
       const token = await result.user.getIdToken();
       
-      // Send token to backend for verification and user creation
       const response = await axios.post('https://taskflow-wxqj.onrender.com/api/auth/google', { token });
       
       if (response.data.success) {

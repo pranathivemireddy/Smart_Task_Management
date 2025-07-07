@@ -45,7 +45,6 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Mobile sidebar */}
       <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
         <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
@@ -77,7 +76,6 @@ export default function Layout({ children }) {
         </div>
       </div>
 
-      {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col bg-white shadow-lg">
         <div className="flex h-16 items-center px-6 border-b border-gray-200">
           <h1 className="text-xl font-bold text-gray-900">Smart Task Manager</h1>
@@ -118,9 +116,7 @@ export default function Layout({ children }) {
         </div>
       </div>
 
-      {/* Main content */}
       <div className="lg:pl-64">
-        {/* Top bar */}
         <div className="sticky top-0 z-10 bg-white shadow-sm border-b border-gray-200">
           <div className="flex h-16 items-center px-4 sm:px-6">
             <button
@@ -140,7 +136,6 @@ export default function Layout({ children }) {
           </div>
         </div>
 
-        {/* Page content */}
         <main className="p-4 sm:p-6">
           {children}
         </main>

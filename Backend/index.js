@@ -34,7 +34,6 @@ app.use(morgan('combined'));
 
 app.use(auditLogger);
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/admin', adminRoutes);

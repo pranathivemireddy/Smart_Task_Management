@@ -23,7 +23,6 @@ export default function TaskModal({ task, onClose, onSave }) {
         status: task.status || 'pending'
       });
     } else {
-      // Set minimum date to today for new tasks
       const today = new Date().toISOString().split('T')[0];
       setFormData(prev => ({ ...prev, dueDate: today }));
     }
@@ -69,7 +68,6 @@ export default function TaskModal({ task, onClose, onSave }) {
     'Other'
   ];
 
-  // Get today's date in YYYY-MM-DD format for min attribute
   const today = new Date().toISOString().split('T')[0];
 
   return (

@@ -106,7 +106,6 @@ export const sendWelcomeEmail = async (userEmail, userName, tempPassword) => {
   }
 };
 
-// Test email configuration
 export const testEmailConfig = async () => {
   try {
     const transporter = createTransporter();

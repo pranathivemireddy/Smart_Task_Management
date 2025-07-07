@@ -36,7 +36,6 @@ export default function Dashboard() {
       setTasks(allTasks);
       setStats(statsRes.data);
 
-      // Filter tasks for different sections
       const today = new Date();
       const todayTasksFiltered = allTasks.filter(task => 
         isToday(new Date(task.dueDate))
@@ -49,21 +48,18 @@ export default function Dashboard() {
       ).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
       setUpcomingTasks(upcomingTasksFiltered.slice(0, 5));
 
-      // Generate completion data for last 7 days with REAL data
       const last7Days = [];
       for (let i = 6; i >= 0; i--) {
         const date = subDays(today, i);
         const dayStart = startOfDay(date);
         const dayEnd = endOfDay(date);
         
-        // Get tasks that were completed on this specific day
         const completedOnDay = allTasks.filter(task => {
           if (task.status !== 'completed' || !task.completedAt) return false;
           const completedDate = new Date(task.completedAt);
           return completedDate >= dayStart && completedDate <= dayEnd;
         }).length;
 
-        // Get tasks that were due on this day
         const tasksForDay = allTasks.filter(task => {
           const taskDate = new Date(task.dueDate);
           return taskDate >= dayStart && taskDate <= dayEnd;
@@ -81,7 +77,6 @@ export default function Dashboard() {
       }
       setCompletionData(last7Days);
 
-      // Generate category data
       const categories = {};
       allTasks.forEach(task => {
         categories[task.category] = (categories[task.category] || 0) + 1;
@@ -111,13 +106,11 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Section */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white">
         <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.name}!</h1>
         <p className="text-blue-100">Here's your task overview for today</p>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between">
@@ -168,9 +161,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Completion Chart */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Daily Task Activity (Last 7 Days)</h2>
@@ -189,7 +180,6 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
-        {/* Category Chart */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Tasks by Category</h2>
@@ -221,9 +211,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Tasks Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Today's Tasks */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Tasks Due Today</h2>
@@ -264,7 +252,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Upcoming Tasks */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Upcoming Tasks</h2>

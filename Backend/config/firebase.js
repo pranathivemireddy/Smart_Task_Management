@@ -26,7 +26,6 @@ export const initializeFirebase = () => {
     console.log('Firebase initialized successfully');
   } catch (error) {
     console.error('Firebase initialization error:', error);
-    // For development, we'll continue without Firebase
     console.log('Continuing without Firebase authentication');
   }
 };
