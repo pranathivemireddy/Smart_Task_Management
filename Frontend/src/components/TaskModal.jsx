@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export default function TaskModal({ task, onClose, onSave }) {
   const [formData, setFormData] = useState({
@@ -40,9 +41,9 @@ export default function TaskModal({ task, onClose, onSave }) {
 
       let response;
       if (task) {
-        response = await axios.put(`https://taskflow-wxqj.onrender.com/api/tasks/${task._id}`, taskData);
+        response = await axios.put(`${BASE_URL}/api/tasks/${task._id}`, taskData);
       } else {
-        response = await axios.post('https://taskflow-wxqj.onrender.com/api/tasks', taskData);
+        response = await axios.post(`${BASE_URL}/api/tasks`, taskData);
       }
 
       if (response.data.success) {

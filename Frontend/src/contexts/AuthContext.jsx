@@ -3,7 +3,7 @@ import { auth, googleProvider } from '../config/firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 const AuthContext = createContext();
 
 export function useAuth() {
@@ -26,7 +26,7 @@ export function AuthProvider({ children }) {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await axios.get('https://taskflow-wxqj.onrender.com/api/auth/profile');
+      const response = await axios.get(`${BASE_URL}/api/auth/profile`);
       if (response.data.success) {
         setUser(response.data.user);
       }
@@ -44,7 +44,7 @@ export function AuthProvider({ children }) {
       const result = await signInWithPopup(auth, googleProvider);
       const token = await result.user.getIdToken();
       
-      const response = await axios.post('https://taskflow-wxqj.onrender.com/api/auth/google', { token });
+      const response = await axios.post(`${BASE_URL}/api/auth/google`, { token });
       
       if (response.data.success) {
         const { token: jwtToken, user } = response.data;
@@ -63,7 +63,7 @@ export function AuthProvider({ children }) {
 
   const loginWithEmail = async (email, password) => {
     try {
-      const response = await axios.post('https://taskflow-wxqj.onrender.com/api/auth/login', { email, password });
+      const response = await axios.post(`${BASE_URL}/api/auth/login`, { email, password });
       
       if (response.data.success) {
         const { token, user } = response.data;
@@ -82,7 +82,7 @@ export function AuthProvider({ children }) {
 
   const register = async (userData) => {
     try {
-      const response = await axios.post('https://taskflow-wxqj.onrender.com/api/auth/register', userData);
+      const response = await axios.post(`${BASE_URL}/api/auth/register`, userData);
       
       if (response.data.success) {
         const { token, user } = response.data;
