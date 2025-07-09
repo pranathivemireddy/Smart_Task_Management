@@ -14,7 +14,6 @@ router.get('/', authenticate, async (req, res) => {
       category
     } = req.query;
 
-    // Update overdue tasks
     await Task.updateMany(
       {
         userId: req.user._id,
@@ -32,9 +31,8 @@ router.get('/', authenticate, async (req, res) => {
       query.category = category;
     }
 
-    // Sort strictly by createdAt descending (newest first)
     const tasks = await Task.find(query)
-      .sort({ createdAt: 0 })
+      .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
