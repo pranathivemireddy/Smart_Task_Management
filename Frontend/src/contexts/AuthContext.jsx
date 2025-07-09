@@ -4,6 +4,7 @@ import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+axios.defaults.withCredentials = true;
 const AuthContext = createContext();
 
 export function useAuth() {

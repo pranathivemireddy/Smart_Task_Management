@@ -59,7 +59,7 @@ export const sendWelcomeEmail = async (userEmail, userName, tempPassword) => {
               <p>Your administrator has created an account for you on Smart Task Manager. You can now start managing your tasks efficiently!</p>
 
               <div class="credentials">
-                <h3>🔑 Your Login Credentials:</h3>
+                <h3>Your Login Credentials:</h3>
                 <p><strong>Email:</strong> ${userEmail}</p>
                 <p><strong>Temporary Password:</strong> <code style="background: #e9ecef; padding: 4px 8px; border-radius: 4px; font-size: 16px;">${tempPassword}</code></p>
               </div>
@@ -77,12 +77,12 @@ export const sendWelcomeEmail = async (userEmail, userName, tempPassword) => {
                 <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/login" class="button">🚀 Login to Smart Task Manager</a>
               </div>
 
-              <h3>✨ Getting Started:</h3>
+              <h3>Getting Started:</h3>
               <ul>
-                <li>📝 Create and organize your tasks</li>
-                <li>📅 Set due dates and priorities</li>
-                <li>📊 Track your progress with analytics</li>
-                <li>📤 Export your data when needed</li>
+                <li>Create and organize your tasks</li>
+                <li> Set due dates and priorities</li>
+                <li>Track your progress with analytics</li>
+                <li>Export your data when needed</li>
               </ul>
 
               <p>If you have any questions or need assistance, please contact your administrator.</p>
@@ -114,10 +114,10 @@ export const testEmailConfig = async () => {
     }
 
     await transporter.verify();
-    console.log('✅ Email configuration is valid');
+    console.log(' Email configuration is valid');
     return { success: true };
   } catch (error) {
-    console.error('❌ Email configuration test failed:', error);
+    console.error('Email configuration test failed:', error);
     return { success: false, error: error.message };
   }
 };

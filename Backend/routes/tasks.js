@@ -7,8 +7,14 @@ const router = express.Router();
 
 router.get('/', authenticate, async (req, res) => {
   try {
-    const { page = 1, limit = 1000, status, category, sortBy = 'dueDate', sortOrder = 'asc' } = req.query;
-    
+    const {
+      page = 1,
+      limit = 1000,
+      status,
+      category
+    } = req.query;
+
+    // Update overdue tasks
     await Task.updateMany(
       {
         userId: req.user._id,
@@ -17,27 +23,23 @@ router.get('/', authenticate, async (req, res) => {
       },
       { status: 'overdue' }
     );
-    
+
     const query = { userId: req.user._id };
-    
     if (status && status !== 'all') {
       query.status = status;
     }
-    
     if (category && category !== 'all') {
       query.category = category;
     }
-    
-    const sort = {};
-    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
-    
+
+    // Sort strictly by createdAt descending (newest first)
     const tasks = await Task.find(query)
-      .sort(sort)
+      .sort({ createdAt: 0 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
-    
+
     const total = await Task.countDocuments(query);
-    
+
     res.json({
       success: true,
       tasks,
@@ -56,6 +58,7 @@ router.get('/', authenticate, async (req, res) => {
     });
   }
 });
+
 
 router.get('/stats', authenticate, async (req, res) => {
   try {

@@ -10,10 +10,6 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 export default function Dashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState({
-    total: 0,
-    completed: 0,
-    pending: 0,
-    overdue: 0
   });
   const [tasks, setTasks] = useState([]);
   const [todayTasks, setTodayTasks] = useState([]);
@@ -29,11 +25,11 @@ export default function Dashboard() {
   const fetchDashboardData = async () => {
     try {
       const [tasksRes, statsRes] = await Promise.all([
-        axios.get(`${BASE_URL}/api/tasks?limit=1000`),
+        axios.get(`${BASE_URL}/api/tasks`),
         axios.get(`${BASE_URL}/api/tasks/stats`)
       ]);
 
-      const allTasks = tasksRes.data.tasks || [];
+      const allTasks = (tasksRes.data.tasks || [])
       setTasks(allTasks);
       setStats(statsRes.data);
 
@@ -107,6 +103,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white">
         <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.name}!</h1>
         <p className="text-blue-100">Here's your task overview for today</p>

@@ -5,7 +5,9 @@ import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import TaskModal from '../components/TaskModal';
 import ExportButtons from '../components/ExportButtons';
+
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 export default function Tasks() {
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
@@ -15,7 +17,8 @@ export default function Tasks() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('dueDate');
+  // const [sortBy, setSortBy] = useState('');
+  const [sortBy, setSortBy] = useState('');
   const [sortOrder, setSortOrder] = useState('asc');
 
   useEffect(() => {
@@ -45,7 +48,7 @@ export default function Tasks() {
     let filtered = [...tasks];
 
     if (searchTerm) {
-      filtered = filtered.filter(task => 
+      filtered = filtered.filter(task =>
         task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()))
       );
@@ -59,37 +62,37 @@ export default function Tasks() {
       filtered = filtered.filter(task => task.category === filterCategory);
     }
 
-    filtered.sort((a, b) => {
-      let aValue, bValue;
+    if (sortBy) {
+      filtered.sort((a, b) => {
+        let aValue, bValue;
+        switch (sortBy) {
+          case 'title':
+            aValue = a.title.toLowerCase();
+            bValue = b.title.toLowerCase();
+            break;
+          case 'dueDate':
+            aValue = new Date(a.dueDate);
+            bValue = new Date(b.dueDate);
+            break;
+          case 'status':
+            aValue = a.status;
+            bValue = b.status;
+            break;
+          case 'category':
+            aValue = a.category;
+            bValue = b.category;
+            break;
+          default:
+            return 0;
+        }
 
-      switch (sortBy) {
-        case 'title':
-          aValue = a.title.toLowerCase();
-          bValue = b.title.toLowerCase();
-          break;
-        case 'dueDate':
-          aValue = new Date(a.dueDate);
-          bValue = new Date(b.dueDate);
-          break;
-        case 'status':
-          aValue = a.status;
-          bValue = b.status;
-          break;
-        case 'category':
-          aValue = a.category;
-          bValue = b.category;
-          break;
-        default:
-          aValue = a.createdAt;
-          bValue = b.createdAt;
-      }
-
-      if (sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
-    });
+        if (sortOrder === 'asc') {
+          return aValue > bValue ? 1 : -1;
+        } else {
+          return aValue < bValue ? 1 : -1;
+        }
+      });
+    }
 
     setFilteredTasks(filtered);
   };
@@ -121,18 +124,20 @@ export default function Tasks() {
 
   const handleToggleStatus = async (taskId, currentStatus) => {
     const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
-    
+
     try {
       const response = await axios.put(`${BASE_URL}/api/tasks/${taskId}`, { status: newStatus });
       if (response.data.success) {
-        setTasks(prevTasks => 
-          prevTasks.map(task => 
-            task._id === taskId ? { 
-              ...task, 
-              status: newStatus,
-              completedAt: newStatus === 'completed' ? new Date().toISOString() : null,
-              updatedAt: new Date().toISOString()
-            } : task
+        setTasks(prevTasks =>
+          prevTasks.map(task =>
+            task._id === taskId
+              ? {
+                  ...task,
+                  status: newStatus,
+                  completedAt: newStatus === 'completed' ? new Date().toISOString() : null,
+                  updatedAt: new Date().toISOString(),
+                }
+              : task
           )
         );
         toast.success(`Task marked as ${newStatus}`);
@@ -145,10 +150,8 @@ export default function Tasks() {
 
   const handleTaskSaved = (savedTask) => {
     if (editingTask) {
-      setTasks(prevTasks => 
-        prevTasks.map(task => 
-          task._id === savedTask._id ? savedTask : task
-        )
+      setTasks(prevTasks =>
+        prevTasks.map(task => (task._id === savedTask._id ? savedTask : task))
       );
     } else {
       setTasks(prevTasks => [savedTask, ...prevTasks]);
@@ -198,11 +201,7 @@ export default function Tasks() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-bold text-gray-900">Tasks</h1>
         <div className="flex gap-2">
-          <ExportButtons 
-            data={filteredTasks} 
-            filename="tasks"
-            type="tasks"
-          />
+          <ExportButtons data={filteredTasks} filename="tasks" type="tasks" />
           <button
             onClick={handleCreateTask}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
@@ -253,6 +252,7 @@ export default function Tasks() {
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
           >
+            <option value="">select type</option>
             <option value="dueDate">Due Date</option>
             <option value="title">Title</option>
             <option value="status">Status</option>
@@ -263,6 +263,7 @@ export default function Tasks() {
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value)}
+            disabled={!sortBy} // disable if no sort field selected
           >
             <option value="asc">Ascending</option>
             <option value="desc">Descending</option>
@@ -276,21 +277,11 @@ export default function Tasks() {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Task
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Due Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
